@@ -1,6 +1,8 @@
 import './style.scss'
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { gsap } from 'gsap';  // Animation intro
 
 // Scene
@@ -8,7 +10,7 @@ const scene = new THREE.Scene();
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 0, 100);
+camera.position.set(0, 0, -100);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({
@@ -19,16 +21,10 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 // s'assurer que la caméra démarre à z=100 (intro)
 // camera.position.set(0, 0, -100);
-camera.position.set(0, 0, 0);
-renderer.render(scene, camera);
 
+// Animation intro (Texte)
+const instructions = document.getElementById('instructions');
 
-const geometry = new THREE.TorusGeometry(10, 3, 16, 100);
-const material = new THREE.MeshStandardMaterial({ color: 0xFF6347 });
-const torus = new THREE.Mesh(geometry, material);
-scene.add(torus);
-
-// (Text 3D removed)
 
 // Lights
 const pointLight = new THREE.PointLight(0xffffff);
@@ -52,45 +48,66 @@ document.addEventListener('click', () => {
   controls.lock();
 });
 
-/* Animation d'intro (commentée)
-gsap.to(camera.position, {
-  z: 0,
-  duration: 8,
-  ease: 'power2.inOut',
-  delay: 0.5,
-  onUpdate: () => {
-    camera.lookAt(0, 0, -100);
-    if (controls && typeof controls.update === 'function') controls.update();
-  },
-  onComplete: () => {
-    console.log('Intro finie !');
-  }
-});
-*/
-
 // Movement state
 const moveState = { forward: false, backward: false, left: false, right: false, up: false, down: false };
 const SPEED = 20; // unités par seconde, ajuster si besoin
 
+// Intro control
+let introStarted = false;
+let introFinished = false;
+function startIntro() {
+  if (introStarted) return;
+  introStarted = true;
+  introFinished = false;
+  gsap.to(camera.position, {
+    z: 0,
+    duration: 8,
+    ease: 'power2.inOut',
+    delay: 0.5,
+    onUpdate: () => {
+      camera.lookAt(0, 0, -100);
+      if (controls && typeof controls.update === 'function') controls.update();
+    },
+    onComplete: () => {
+      introFinished = true;
+      console.log('Intro finie !');
+    }
+  });
+}
+
 function onKeyDown(event) {
+  // Pendant l'intro, n'autoriser que Space (et Escape pour unlock)
+  if (!introFinished) {
+    if (event.code === 'Space') { moveState.up = true; startIntro(); }
+    if (event.code === 'Escape') { controls.unlock(); }
+    return;
+  }
+
   switch (event.code) {
     case 'KeyW': moveState.forward = true; break;
     case 'KeyS': moveState.backward = true; break;
     case 'KeyA': moveState.left = true; break;
     case 'KeyD': moveState.right = true; break;
     case 'Space': moveState.up = true; break;
-    // case 'ShiftLeft': moveState.down = true; break;
+    case 'Escape': controls.unlock(); break;
+    case 'ShiftLeft': moveState.down = true; break;
   }
 }
 
 function onKeyUp(event) {
+  // Pendant l'intro, n'autoriser que Space release
+  if (!introFinished) {
+    if (event.code === 'Space') moveState.up = false;
+    return;
+  }
+
   switch (event.code) {
     case 'KeyW': moveState.forward = false; break;
     case 'KeyS': moveState.backward = false; break;
     case 'KeyA': moveState.left = false; break;
     case 'KeyD': moveState.right = false; break;
     case 'Space': moveState.up = false; break;
-    // case 'ShiftLeft': moveState.down = false; break;
+    case 'ShiftLeft': moveState.down = false; break;
   }
 }
 
@@ -98,10 +115,6 @@ document.addEventListener('keydown', onKeyDown);
 document.addEventListener('keyup', onKeyUp);
 
 let prevTime = performance.now();
-
-// Titre overlay contrôlé par la position Y de la caméra
-const titleEl = typeof document !== 'undefined' ? document.getElementById('title') : null;
-const TITLE_Y_THRESHOLD = 5; // ajuster selon besoin
 
 // Marqueur placé au centre du champ de vue (quelques unités devant la caméra)
 const MARKER_DISTANCE = 10; // distance devant la caméra
@@ -113,10 +126,7 @@ const _cameraDir = new THREE.Vector3();
 
 function animate() {
   requestAnimationFrame(animate);
-  torus.rotation.x += 0.01;
-  torus.rotation.y += 0.005;
-  torus.rotation.z += 0.01;
-  // torus.scale.x = 1 + 0.3 * Math.sin(Date.now() * 0.005);
+  // torus retiré — pas d'animation pour l'anneau
 
   // Déplacement basé sur PointerLockControls
   const time = performance.now();
@@ -134,12 +144,7 @@ function animate() {
     if (moveY !== 0) camera.position.y += moveY * SPEED * delta;
   }
 
-  // Affiche le titre seulement quand la caméra est au-dessus du seuil
-  if (titleEl) {
-    const visible = camera.position.y > TITLE_Y_THRESHOLD;
-    titleEl.style.opacity = visible ? '1' : '0';
-    titleEl.style.transform = visible ? 'translateY(0)' : 'translateY(-6px)';
-  }
+  // (overlay titre désactivé)
   // Met à jour la position du marqueur devant la caméra
   camera.getWorldDirection(_cameraDir);
   cameraMarker.position.copy(camera.position).add(_cameraDir.multiplyScalar(MARKER_DISTANCE));
@@ -147,6 +152,26 @@ function animate() {
 }
 
 animate();
+
+// Texte 
+const loader = new FontLoader();
+loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+  const textGeometry = new TextGeometry('Bienvenue dans l\'espace !', {
+    font: font,
+    size: .8,
+    height: 1,
+    curveSegments: 12,
+    bevelEnabled: true,
+    bevelThickness: 0.1,
+    bevelSize: 0.1,
+    bevelOffset: 0,
+    bevelSegments: 5
+  });
+  const textMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+  const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+  textMesh.position.set(0, -5, -50);
+  scene.add(textMesh);
+});
 
 // Stars
 function addStar() {
@@ -162,16 +187,3 @@ function addStar() {
 Array(200).fill().forEach(addStar);
 
 // Background
-// const spaceTexture = new THREE.TextureLoader().load('images/espace.jpg');
-// scene.background = spaceTexture;
-
-// Avatar
-const esapceTexture = new THREE.TextureLoader().load('assets/images/espace.jpg');
-const esapce = new THREE.Mesh(
-  new THREE.SphereGeometry(4, 10, 10),
-  new THREE.MeshBasicMaterial({ map: esapceTexture }),
-);
-esapce.position.z = -20;
-esapce.position.x = 23;
-esapce.position.y = -12;
-scene.add(esapce);

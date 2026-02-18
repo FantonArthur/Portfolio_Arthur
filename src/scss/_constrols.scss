@@ -1,0 +1,16 @@
+.control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: fixed;
+  top: 0;
+  left: 20px;
+  margin-top: 20px;
+  font-size: .9em;
+  font-family: var(--inter-regular);
+  color: var(--creme);
+  p {
+    margin: 2px 0;
+    opacity: 0.3;
+  }
+}

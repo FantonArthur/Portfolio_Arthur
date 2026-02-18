@@ -1,4 +1,5 @@
 @use './scss/variables';
+@use './scss/constrols';
 // Importation des polices Druk et Inter tight
 @font-face {
   font-family: 'Druk';
@@ -97,30 +98,43 @@ canvas {
   z-index: 100;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;  // Haut
+  justify-content: center;  // Centre verticalement
   align-items: center;
   padding-top: 0;       // Collé au plafond
 }
 
 #title {
-  position: static;       // Garde dans flex
+  position: relative;
+  display: flex;
+  /* animation continue sans saut : va/retour (alternate) */
+  align-items: center;
   color: var(--creme);
   font-size: clamp(2rem, 5vw, 4rem);  // Responsive
-  opacity: 0; /* Masqué par défaut, rendu contrôlé par la caméra */
-  transform: translateY(-6px);
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-  margin: 0;
+  transform: none;
   text-align: center;
-  font-family: 'Druk', sans-serif;
-  font-weight: var(--druk-super);
-  background-color: var(--bleu-pale);
+  font-family: 'Inter Tight', sans-serif;
+  font-weight: var(--inter-regular);
+  background-size: 200%;
+  background-clip: text;
+  padding: 10px 20px;
+  border-radius: 5px;
+  overflow: hidden;
 }
 
+@keyframes shine {
+  from {
+    background-position: 200%;
+  }
+  to {
+    background-position: 0%;
+  }
+}
+
+/* Restauration du style pour l'élément #instructions */
 #instructions {
   color: var(--creme);
   font-size: 1.2rem;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  // text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
   margin: 20px 0 0 0;
   text-align: center;
   font-family: 'Inter Tight', sans-serif;
@@ -128,4 +142,15 @@ canvas {
   background: rgba(0, 0, 0, 0.3);
   padding: 10px 20px;
   border-radius: 5px;
+  color: transparent;
+  background-image: linear-gradient(
+    to right,
+    var(--creme),
+    transparent,
+    var(--creme)
+  );
+  background-size: 200%;
+  background-clip: text;
+  overflow: hidden; 
+  animation: shine 8s linear infinite;
 }
