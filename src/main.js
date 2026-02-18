@@ -5,6 +5,7 @@ import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { gsap } from 'gsap';  // Animation intro
 
+
 // Scene
 const scene = new THREE.Scene();
 
@@ -55,6 +56,7 @@ const SPEED = 20; // unités par seconde, ajuster si besoin
 // Intro control
 let introStarted = false;
 let introFinished = false;
+let _pendingScaleAnimation = false;
 function startIntro() {
   if (introStarted) return;
   introStarted = true;
@@ -71,6 +73,24 @@ function startIntro() {
     onComplete: () => {
       introFinished = true;
       console.log('Intro finie !');
+      // Si le texte est déjà créé, animer son scale, sinon marquer en attente
+      try {
+        if (typeof textMesh !== 'undefined' && textMesh) {
+          gsap.to(textMesh.scale, { x: 3, y: 3, z: 3, duration: 1.2, ease: 'elastic.out(1, 0.5)' });
+        } else {
+          _pendingScaleAnimation = true;
+        }
+        // Faire disparaître les instructions (fade out puis display none)
+      try {
+        if (instructions) {
+          gsap.to(instructions, { opacity: 0, duration: 0.8, onComplete: () => { instructions.style.display = 'none'; } });
+        }
+      } catch (e) {
+        if (instructions) instructions.style.display = 'none';
+      }
+      } catch (e) {
+        _pendingScaleAnimation = true;
+      }
     }
   });
 }
@@ -155,23 +175,35 @@ animate();
 
 // Texte 
 const loader = new FontLoader();
-loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-  const textGeometry = new TextGeometry('Bienvenue dans l\'espace !', {
-    font: font,
-    size: .8,
-    height: 1,
-    curveSegments: 12,
-    bevelEnabled: true,
-    bevelThickness: 0.1,
-    bevelSize: 0.1,
-    bevelOffset: 0,
-    bevelSegments: 5
-  });
-  const textMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-  const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-  textMesh.position.set(0, -5, -50);
-  scene.add(textMesh);
+const fontUrl = new URL('./fonts/Soloist Laser_Regular.json', import.meta.url).href;
+const font = await loader.loadAsync(fontUrl);
+const textGeometry = new TextGeometry("Arthur Fanton\nExplore My Room", {
+  font: font,
+  size: 4,
+  height: 2,
+  depth: 1,
+  curveSegments: 12,
+  bevelEnabled: true,
+  bevelThickness: 0.1,
+  bevelSize: 0.1,
+  bevelOffset: 0,
+  bevelSegments: 5
 });
+// Centrer le pivot de la géométrie au milieu du texte
+textGeometry.computeBoundingBox();
+if (textGeometry.boundingBox) {
+  const center = new THREE.Vector3();
+  textGeometry.boundingBox.getCenter(center);
+  textGeometry.translate(-center.x, -center.y, -center.z);
+}
+const textMesh = new THREE.Mesh(textGeometry, [
+  new THREE.MeshPhongMaterial({ color: "#A67C52" }), // front
+  new THREE.MeshPhongMaterial({ color: "#F5F5DC" })  // side
+]);
+textMesh.position.set(0, 0, -130);
+scene.add(textMesh);
+
+
 
 // Stars
 function addStar() {
@@ -187,3 +219,16 @@ function addStar() {
 Array(200).fill().forEach(addStar);
 
 // Background
+// Couleur de fond et brouillard léger
+renderer.setClearColor(0x5A7D9A);
+scene.fog = new THREE.FogExp2(0x5A7D9A, 0.0015);
+
+// Ajuster la taille du canvas et l'aspect quand la fenêtre change
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+window.addEventListener('resize', onWindowResize, false);
+
+// Fin du fichier — autres ajouts possibles : audio, interaction, textures...
