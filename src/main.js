@@ -4,10 +4,58 @@ import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockCont
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { gsap } from 'gsap';  // Animation intro
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 
 
 // Scene
 const scene = new THREE.Scene();
+// === FBX Loader pour les lunettes ===
+let lunettesObject = null; // Référence pour le raycast
+const fbxLoader = new FBXLoader();
+fbxLoader.load('./assets/obj/lunettes.fbx', (object) => {
+  object.scale.set(6, 6, 6);
+  object.position.set(0, 0, 0); // Ajuste la position si besoin
+  object.name = 'lunettes'; // Nom pour identifier l'objet
+  lunettesObject = object;
+  scene.add(object);
+});
+// ===== RAYCAST INTERACTION SYSTEM (variables globales) =====
+const raycaster = new THREE.Raycaster();
+const interactHint = document.getElementById('interact-hint');
+const boueePanel = document.getElementById('bouee-panel');
+const lunettesPanel = document.getElementById('lunettes-panel');
+let isHoveringBouee = false;
+let isHoveringLunettes = false;
+let currentHoveredObject = null; // Pour savoir quel objet est survolé
+// === OBJ/MTL Loader ===
+// Bouée
+let boueeObject = null; // Référence pour le raycast
+const mtlLoaderBouee = new MTLLoader();
+mtlLoaderBouee.load('./assets/obj/bouee.mtl', (materials) => {
+  materials.preload();
+  const objLoaderBouee = new OBJLoader();
+  objLoaderBouee.setMaterials(materials);
+  objLoaderBouee.load('./assets/obj/bouee.obj', (object) => {
+    object.position.set(0, 0, 0); // Ajuste la position si besoin
+    object.scale.set(6, 6, 6);   // Scale x6
+    object.name = 'bouee'; // Nom pour identifier l'objet
+    boueeObject = object;
+    scene.add(object);
+  });
+});
+// const mtlLoader = new MTLLoader();
+// mtlLoader.load('./assets/obj/test.mtl', (materials) => {
+//   materials.preload();
+//   const objLoader = new OBJLoader();
+//   objLoader.setMaterials(materials);
+//   objLoader.load('./assets/obj/test.obj', (object) => {
+//     object.position.set(0, -5, 0); // Ajuste la position si besoin
+//     object.scale.set(6, 6, 6);   // Ajuste la taille si besoin
+//     scene.add(object);
+//   });
+// });
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -168,6 +216,10 @@ function animate() {
   // Met à jour la position du marqueur devant la caméra
   camera.getWorldDirection(_cameraDir);
   cameraMarker.position.copy(camera.position).add(_cameraDir.multiplyScalar(MARKER_DISTANCE));
+  
+  // Vérifier interaction avec la bouée
+  updateInteractionHint();
+  
   renderer.render(scene, camera);
 }
 
@@ -203,21 +255,6 @@ const textMesh = new THREE.Mesh(textGeometry, [
 textMesh.position.set(0, 0, -130);
 scene.add(textMesh);
 
-
-
-// Stars
-function addStar() {
-  const geometry = new THREE.BoxGeometry(1, 1, 1);
-  const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-  const star = new THREE.Mesh(geometry, material);
-
-  const [x, y, z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread(100));
-
-  star.position.set(x, y, z);
-  scene.add(star);
-}
-Array(200).fill().forEach(addStar);
-
 // Background
 // Couleur de fond et brouillard léger
 renderer.setClearColor(0x5A7D9A);
@@ -230,5 +267,192 @@ function onWindowResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 window.addEventListener('resize', onWindowResize, false);
+
+// ===== CREDITS & CONTACT PANELS =====
+const creditsBtn = document.getElementById('credits-btn');
+const contactBtn = document.getElementById('contact-btn');
+const creditsPanel = document.getElementById('credits-panel');
+const contactPanel = document.getElementById('contact-panel');
+
+// Fonction pour ouvrir un panneau avec animation
+function openPanel(panel) {
+  // Fermer l'autre panneau si ouvert
+  document.querySelectorAll('.info-panel').forEach(p => {
+    if (p !== panel) p.classList.remove('active');
+  });
+
+  // Désactive le lock de la souris si panneau bouée, crédits, contact ou lunettes
+  if ((panel.id === 'bouee-panel' || panel.id === 'credits-panel' || panel.id === 'contact-panel' || panel.id === 'lunettes-panel') && controls.isLocked) {
+    controls.unlock();
+  }
+
+  // Animer l'ouverture avec GSAP pour plus de fluidité
+  gsap.fromTo(panel, 
+    { opacity: 0 },
+    { opacity: 1, duration: 0.3, ease: 'power2.out' }
+  );
+
+  panel.classList.add('active');
+
+  // Animation du contenu depuis le bouton (bas gauche)
+  const content = panel.querySelector('.panel-content');
+  gsap.fromTo(content,
+    { 
+      x: -100, 
+      y: 100, 
+      scale: 0.8, 
+      opacity: 0 
+    },
+    { 
+      x: 0, 
+      y: 0, 
+      scale: 1, 
+      opacity: 1, 
+      duration: 0.5, 
+      ease: 'back.out(1.7)' 
+    }
+  );
+}
+
+// Fonction pour fermer un panneau
+function closePanel(panel) {
+  const content = panel.querySelector('.panel-content');
+
+  gsap.to(content, {
+    x: -50,
+    y: 50,
+    scale: 0.9,
+    opacity: 0,
+    duration: 0.3,
+    ease: 'power2.in'
+  });
+
+  gsap.to(panel, {
+    opacity: 0,
+    duration: 0.3,
+    delay: 0.1,
+    ease: 'power2.in',
+    onComplete: () => {
+      panel.classList.remove('active');
+      // Réactive le lock de la souris si panneau bouée, crédits ou contact (PAS lunettes)
+      if ((panel.id === 'bouee-panel' || panel.id === 'credits-panel' || panel.id === 'contact-panel') && !controls.isLocked) {
+        controls.lock();
+      }
+    }
+  });
+}
+
+// Event listeners pour les boutons
+creditsBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  openPanel(creditsPanel);
+});
+
+contactBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  openPanel(contactPanel);
+});
+
+// Fermer les panneaux avec les boutons X
+document.querySelectorAll('.close-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const panel = btn.closest('.info-panel');
+    closePanel(panel);
+  });
+});
+
+// Fermer en cliquant en dehors du contenu
+document.querySelectorAll('.info-panel').forEach(panel => {
+  panel.addEventListener('click', (e) => {
+    if (e.target === panel) {
+      closePanel(panel);
+    }
+  });
+});
+
+// Fermer avec la touche Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.info-panel.active').forEach(panel => {
+      closePanel(panel);
+    });
+  }
+});
+
+
+// Fonction pour vérifier si on regarde la bouée
+function checkBoueeRaycast() {
+  if (!boueeObject || !introFinished) return false;
+  
+  // Direction du regard (centre de l'écran)
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+  
+  // Vérifier intersection avec la bouée et ses enfants
+  const intersects = raycaster.intersectObject(boueeObject, true);
+  
+  // Distance maximale pour l'interaction
+  const maxDistance = 30;
+  
+  if (intersects.length > 0 && intersects[0].distance < maxDistance) {
+    return true;
+  }
+  return false;
+}
+
+// Fonction pour vérifier si on regarde les lunettes
+function checkLunettesRaycast() {
+  if (!lunettesObject || !introFinished) return false;
+  
+  // Direction du regard (centre de l'écran)
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+  
+  // Vérifier intersection avec les lunettes et ses enfants
+  const intersects = raycaster.intersectObject(lunettesObject, true);
+  
+  // Distance maximale pour l'interaction
+  const maxDistance = 30;
+  
+  if (intersects.length > 0 && intersects[0].distance < maxDistance) {
+    return true;
+  }
+  return false;
+}
+
+// Mise à jour du hint d'interaction dans la boucle d'animation
+function updateInteractionHint() {
+  const hoveringBouee = checkBoueeRaycast();
+  const hoveringLunettes = checkLunettesRaycast();
+
+  if (hoveringBouee) {
+    interactHint.classList.add('visible');
+    isHoveringBouee = true;
+    isHoveringLunettes = false;
+    currentHoveredObject = 'bouee';
+  } else if (hoveringLunettes) {
+    interactHint.classList.add('visible');
+    isHoveringBouee = false;
+    isHoveringLunettes = true;
+    currentHoveredObject = 'lunettes';
+  } else {
+    interactHint.classList.remove('visible');
+    isHoveringBouee = false;
+    isHoveringLunettes = false;
+    currentHoveredObject = null;
+  }
+}
+
+// Interaction avec E
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'e' || e.key === 'E') {
+    if (isHoveringBouee && boueePanel) {
+      openPanel(boueePanel);
+      interactHint.classList.remove('visible');
+    } else if (isHoveringLunettes && lunettesPanel) {
+      openPanel(lunettesPanel);
+      interactHint.classList.remove('visible');
+    }
+  }
+});
 
 // Fin du fichier — autres ajouts possibles : audio, interaction, textures...
