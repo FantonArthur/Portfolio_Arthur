@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <canvas id="bg"></canvas>
+
+    <div id="overlay">
+      <p id="instructions">Appuis sur ESPACE pour commencer l'exploration</p>
+      <div class="control">
+  <p>W - avancer</p>
+  <p>S - reculer</p>
+  <p>A - gauche</p>
+  <p>D - droite</p>
+  <p>SHIFT - descendre</p>
+  <p>ESPACE - monter</p>
+  <p>ECHAP - afficher la souris</p>
+      </div>
+    </div>
+
+    <!-- Boutons Credits & Contact en bas à gauche -->
+    <div id="bottom-left-menu">
+      <span id="credits-btn" class="menu-btn">Crédits</span>
+      <span id="contact-btn" class="menu-btn">Contact</span>
+    </div>
+
+    <!-- Panneau modal Credits -->
+    <div id="credits-panel" class="info-panel">
+      <div class="panel-content contact-style">
+        <button class="close-btn">&times;</button>
+        <h2>Crédits</h2>
+        <div class="contact-block">
+          <span class="contact-icon">🪑</span>
+          <span class="contact-title">Bureau</span>
+          <span class="contact-value"><a href="https://poly.pizza/m/ISpMh81QGq" target="_blank">poly.pizza/Bureau</a></span>
+        </div>
+        <div class="contact-block">
+          <span class="contact-icon">🛟</span>
+          <span class="contact-title">Bouée</span>
+          <span class="contact-value"><a href="https://poly.pizza/m/7n1vrlFN0GH" target="_blank">poly.pizza/Bouée</a></span>
+        </div>
+        <div class="contact-block">
+          <span class="contact-icon">📋</span>
+          <span class="contact-title">Pegboard</span>
+          <span class="contact-value"><a href="https://poly.pizza/m/5Ql0Sdq6fmy" target="_blank">poly.pizza/Pegboard</a></span>
+        </div>
+        <div class="contact-block">
+          <span class="contact-icon">🗄️</span>
+          <span class="contact-title">Étagère 1</span>
+          <span class="contact-value"><a href="https://poly.pizza/m/420L7-5BrPw" target="_blank">poly.pizza/Étagère</a></span>
+        </div>
+        <div class="contact-block">
+          <span class="contact-icon">🗄️</span>
+          <span class="contact-title">Étagère 2</span>
+          <span class="contact-value"><a href="https://poly.pizza/m/30Iealxb0p" target="_blank">poly.pizza/Étagère</a></span>
+        </div>
+        <div class="contact-block">
+          <span class="contact-icon">🖼️</span>
+          <span class="contact-title">Cadre</span>
+          <span class="contact-value"><a href="https://poly.pizza/m/30Iealxb0p" target="_blank">poly.pizza/Cadre</a></span>
+        </div>
+        <div class="contact-block">
+          <span class="contact-icon">🕶️</span>
+          <span class="contact-title">Lunettes</span>
+          <span class="contact-value"><a href="https://poly.pizza/m/j3xPyO1mvt" target="_blank">poly.pizza/Lunettes</a></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panneau modal Contact -->
+    <div id="contact-panel" class="info-panel">
+      <div class="panel-content contact-style">
+        <button class="close-btn">&times;</button>
+        <h2>Contact</h2>
+        <div class="contact-block">
+          <span class="contact-icon">📧</span>
+          <span class="contact-title">Email</span>
+          <span class="contact-value"><a href="mailto:arthur.fanton@hotmail.com">arthur.fanton@hotmail.com</a></span>
+        </div>
+        <div class="contact-block">
+          <span class="contact-icon">💼</span>
+          <span class="contact-title">LinkedIn</span>
+          <span class="contact-value"><a href="https://www.linkedin.com/in/arthur-fanton/" target="_blank">linkedin/arthur-fanton</a></span>
+        </div>
+        <div class="contact-block">
+          <span class="contact-icon">🐙</span>
+          <span class="contact-title">GitHub</span>
+          <span class="contact-value"><a href="https://github.com/FantonArthur" target="_blank">github/FantonArthur</a></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indication d'interaction (hover) -->
+    <div id="interact-hint">
+      <span>Appuie sur <strong>E</strong> pour interagir</span>
+    </div>
+
+    <!-- Panneau modal Bouée -->
+    <div id="bouee-panel" class="info-panel">
+      <div class="panel-content contact-style">
+        <button class="close-btn">&times;</button>
+        <h2>🛟 La Bouée</h2>
+        <p>Cette bouée représente ma passion pour les sports nautiques et la mer.</p>
+        <p>Elle symbolise aussi la capacité à rester à flot face aux défis, et l'importance de savoir naviguer dans les eaux parfois tumultueuses de la vie professionnelle.</p>
+        <p><em>Modèle 3D : Poly Pizza</em></p>
+      </div>
+    </div>
+
+    <!-- Panneau modal Lunettes -->
+    <div id="lunettes-panel" class="info-panel">
+      <div class="panel-content contact-style">
+        <button class="close-btn">&times;</button>
+        <h2>🕶️ Les Lunettes</h2>
+        <p>Ces lunettes symbolisent ma vision et ma façon d'observer le monde.</p>
+        <p>Elles représentent aussi l'importance de garder une perspective claire et de voir au-delà des apparences.</p>
+        <p><em>Modèle 3D : Poly Pizza</em></p>
+      </div>
+    </div>
+
+    <div id="scrollable-content">
+
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
