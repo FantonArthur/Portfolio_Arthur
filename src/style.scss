@@ -17,7 +17,7 @@
   margin-bottom: 16px;
   color: var(--creme);
   font-size: 0.9rem;
-  font-family: var(--inter-medium);
+  font-family: var(--inter-medium), 'sans-serif';
   box-shadow: 0 0 0 2px rgba(245,245,220,0.08);
 }
 
@@ -41,7 +41,7 @@
 
 .contact-value {
   font-size: 0.9rem;
-  font-family: var(--inter-medium);
+  font-family: var(--inter-medium), 'sans-serif';
   color: var(--creme);
   word-break: break-all;
 }
@@ -195,7 +195,7 @@ canvas {
   // text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
   margin: 15rem 0 0 0;
   text-align: center;
-  font-family: var(--inter-regular);
+  font-family: 'Inter Tight', 'sans-serif';
   background: rgba(0, 0, 0, 0.3);
   padding: 10px 20px;
   border-radius: 5px;
@@ -219,7 +219,7 @@ canvas {
 }
 
 .menu-btn {
-  font-family: var(--inter-medium);
+  font-family: 'Inter Tight', 'sans-serif';
   font-size: 1rem;
   color: var(--creme);
   cursor: pointer;
@@ -303,7 +303,7 @@ canvas {
   max-width: 500px;
   width: 90%;
   color: var(--creme);
-  font-family: var(--inter-light);
+  font-family: 'Inter Tight', 'sans-serif';
   z-index: 1;
   
   // Animation d'entrée depuis le bas gauche
@@ -313,7 +313,7 @@ canvas {
               opacity 0.4s ease;
   
   h2 {
-    font-family: var(--inter-medium);
+  font-family: 'Inter Tight', 'sans-serif';
     font-size: 2rem;
     margin-bottom: 20px;
   color: var(--creme);

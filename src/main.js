@@ -45,17 +45,17 @@ mtlLoaderBouee.load('./assets/obj/bouee.mtl', (materials) => {
     scene.add(object);
   });
 });
-// const mtlLoader = new MTLLoader();
-// mtlLoader.load('./assets/obj/test.mtl', (materials) => {
-//   materials.preload();
-//   const objLoader = new OBJLoader();
-//   objLoader.setMaterials(materials);
-//   objLoader.load('./assets/obj/test.obj', (object) => {
-//     object.position.set(0, -5, 0); // Ajuste la position si besoin
-//     object.scale.set(6, 6, 6);   // Ajuste la taille si besoin
-//     scene.add(object);
-//   });
-// });
+const mtlLoader = new MTLLoader();
+mtlLoader.load('./assets/obj/test.mtl', (materials) => {
+  materials.preload();
+  const objLoader = new OBJLoader();
+  objLoader.setMaterials(materials);
+  objLoader.load('./assets/obj/test.obj', (object) => {
+    object.position.set(0, -5, 0); // Ajuste la position si besoin
+    object.scale.set(6, 6, 6);   // Ajuste la taille si besoin
+    scene.add(object);
+  });
+});
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
