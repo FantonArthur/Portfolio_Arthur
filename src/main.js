@@ -667,11 +667,3 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Fin du fichier — autres ajouts possibles : audio, interaction, textures...
-
-object.traverse(child => {
-  if (child.material.name.includes('model2:mat21') || child.material.name === 'lambert7') {
-    child.material.transparent = true;
-    child.material.opacity = 0.1;
-    child.material.depthWrite = false;
-  }
-});
