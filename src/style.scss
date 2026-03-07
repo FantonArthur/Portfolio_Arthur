@@ -25,6 +25,52 @@
   margin-bottom: 0;
 }
 
+// Credits grid — small square cards with flex wrap
+.credits-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.credit-cube {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 150px;
+  background: rgba(245, 245, 220, 0.12);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--creme);
+  transition: background 0.2s, transform 0.2s;
+
+  &:hover {
+    background: rgba(245, 245, 220, 0.25);
+    transform: scale(1.05);
+  }
+
+  .contact-icon {
+    font-size: 2rem;
+    margin-right: 0;
+    margin-bottom: 6px;
+  }
+
+  .credit-label {
+    font-size: 0.75rem;
+    font-family: var(--inter-medium), 'sans-serif';
+    text-align: center;
+  }
+}
+
+// Responsive size: reduce credit cubes to 100x100 below 450px
+@media (max-width: 650px) {
+  .credit-cube {
+    width: 100px;
+    height: 100px;
+  }
+}
+
 .contact-icon {
   font-size: 2.2rem;
   margin-right: 8px;
@@ -53,8 +99,138 @@
   transition: text-decoration 0.2s;
 }
 
+// Images cliquables dans les panneaux
+.panel-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.panel-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid rgba(245, 245, 220, 0.2);
+  cursor: zoom-in;
+  transition: transform 0.2s, border-color 0.2s;
+
+  &:hover {
+    transform: scale(1.06);
+    border-color: rgba(245, 245, 220, 0.7);
+  }
+}
+
+.panel-videos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.panel-video {
+  width: 200px;
+  max-width: 100%;
+  border-radius: 8px;
+  border: 2px solid rgba(245, 245, 220, 0.2);
+  background: #000;
+}
+
+// Lightbox overlay
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.85);
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  &.active {
+    display: flex;
+  }
+
+  img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    object-fit: contain;
+    transform-origin: center center;
+    cursor: zoom-in;
+    user-select: none;
+    -webkit-user-drag: none;
+
+    &.zoomed {
+      cursor: grab;
+    }
+
+    &.dragging {
+      cursor: grabbing;
+    }
+  }
+}
+
+#lightbox-hint {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.72rem;
+  white-space: nowrap;
+  pointer-events: none;
+  font-family: sans-serif;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 28px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2.5rem;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
 .contact-value a:hover {
   text-decoration: underline;
+}
+
+// Scrollbar thématique
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(138, 154, 91, 0.15);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #8A9A5B;
+  border-radius: 8px;
+  border: 2px solid rgba(245, 245, 220, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0b46a;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #8A9A5B rgba(138, 154, 91, 0.15);
 }
 // Importation des polices Druk et Inter tight
 @font-face {
@@ -302,6 +478,8 @@ canvas {
   padding: 40px 50px;
   max-width: 500px;
   width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
   color: var(--creme);
   font-family: 'Inter Tight', 'sans-serif';
   z-index: 1;
@@ -350,7 +528,7 @@ canvas {
     
     &:hover {
       color: var(--creme);
-      text-decoration: underline;
+      // text-decoration: underline;
     }
   }
 }

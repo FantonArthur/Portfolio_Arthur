@@ -15,8 +15,9 @@ const scene = new THREE.Scene();
 let lunettesObject = null; // Référence pour le raycast
 const fbxLoader = new FBXLoader();
 fbxLoader.load('./assets/obj/lunettes.fbx', (object) => {
-  object.scale.set(6, 6, 6);
-  object.position.set(0, 0, 0); // Ajuste la position si besoin
+  object.scale.set(1.5, 1.5, 1.5);
+  object.position.set(-21, -.5, -1); // Ajuste la position si besoin
+  object.rotation.set(0, 90, 0); // Ajuste la rotation si besoin
   object.name = 'lunettes'; // Nom pour identifier l'objet
   lunettesObject = object;
   scene.add(object);
@@ -26,33 +27,86 @@ const raycaster = new THREE.Raycaster();
 const interactHint = document.getElementById('interact-hint');
 const boueePanel = document.getElementById('bouee-panel');
 const lunettesPanel = document.getElementById('lunettes-panel');
+const ballPanel = document.getElementById('ball-panel');
+const montagnePanel = document.getElementById('montagne-panel');
 let isHoveringBouee = false;
 let isHoveringLunettes = false;
+let isHoveringBall = false;
+let isHoveringMontagne = false;
 let currentHoveredObject = null; // Pour savoir quel objet est survolé
 // === OBJ/MTL Loader ===
 // Bouée
 let boueeObject = null; // Référence pour le raycast
+let beanObject = null;
+let montagneObject = null;
+let rugbyObject = null;
 const mtlLoaderBouee = new MTLLoader();
 mtlLoaderBouee.load('./assets/obj/bouee.mtl', (materials) => {
   materials.preload();
   const objLoaderBouee = new OBJLoader();
   objLoaderBouee.setMaterials(materials);
   objLoaderBouee.load('./assets/obj/bouee.obj', (object) => {
-    object.position.set(0, 0, 0); // Ajuste la position si besoin
+    object.position.set(9.5, 0, 0); // Ajuste la position si besoin
     object.scale.set(6, 6, 6);   // Scale x6
     object.name = 'bouee'; // Nom pour identifier l'objet
     boueeObject = object;
     scene.add(object);
   });
 });
+
+// Montagne (OBJ/MTL)
+const mtlLoaderMontagne = new MTLLoader();
+mtlLoaderMontagne.load('./assets/obj/montagne.mtl', (materials) => {
+  materials.preload();
+  const objLoaderMontagne = new OBJLoader();
+  objLoaderMontagne.setMaterials(materials);
+  objLoaderMontagne.load('./assets/obj/montagne.obj', (object) => {
+    object.position.set(-22.2, 6.1, -8);
+    object.scale.set(1, 1, 1);
+    object.name = 'montagne';
+    montagneObject = object;
+    scene.add(object);
+  });
+});
+
+// ball (OBJ/MTL)
+const mtlLoaderBall = new MTLLoader();
+mtlLoaderBall.load('./assets/obj/ball.mtl', (materials) => {
+  materials.preload();
+  const objLoaderall = new OBJLoader();
+  objLoaderall.setMaterials(materials);
+  objLoaderall.load('./assets/obj/ball.obj', (object) => {
+    object.position.set(13, -7, 34);
+    object.scale.set(3, 3, 3);
+    object.name = 'ball';
+    rugbyObject = object;
+    scene.add(object);
+  });
+});
+// bean (OBJ/MTL)
+const mtlLoaderBean = new MTLLoader();
+mtlLoaderBean.load('./assets/obj/BeanBag.mtl', (materials) => {
+  materials.preload();
+  const objLoaderBean = new OBJLoader();
+  objLoaderBean.setMaterials(materials);
+  objLoaderBean.load('./assets/obj/BeanBag.obj', (object) => {
+    object.position.set(21, -9, 29);
+    object.scale.set(10, 10, 10);
+    object.rotation.set(0, Math.PI * 1.5, 0); // 270° sur l'axe Y
+    object.name = 'bean';
+    beanObject = object;
+    scene.add(object);
+  });
+});
+
 const mtlLoader = new MTLLoader();
-mtlLoader.load('./assets/obj/test.mtl', (materials) => {
+mtlLoader.load('./assets/obj/bureau.mtl', (materials) => {
   materials.preload();
   const objLoader = new OBJLoader();
   objLoader.setMaterials(materials);
-  objLoader.load('./assets/obj/test.obj', (object) => {
-    object.position.set(0, -5, 0); // Ajuste la position si besoin
-    object.scale.set(6, 6, 6);   // Ajuste la taille si besoin
+  objLoader.load('./assets/obj/bureau.obj', (object) => {
+    object.position.set(-2, -10, -5); // Ajuste la position si besoin
+    object.scale.set(10, 10, 10);   // Ajuste la taille si besoin
     scene.add(object);
   });
 });
@@ -81,13 +135,7 @@ pointLight.position.set(5, 5, 5);
 
 const ambientLight = new THREE.AmbientLight(0xffffff);
 
-// Helpers
-// const lightHelper = new THREE.PointLightHelper(pointLight);
-// const gridHelper = new THREE.GridHelper(200, 50);
-// scene.add(lightHelper, gridHelper);
-const gridhelper = new THREE.GridHelper(200, 50);
-
-scene.add(pointLight, ambientLight, gridhelper);
+scene.add(pointLight, ambientLight);
 
 // PointerLockControls pour contrôle libre (regarder + marcher)
 const controls = new PointerLockControls(camera, renderer.domElement);
@@ -100,6 +148,26 @@ document.addEventListener('click', () => {
 // Movement state
 const moveState = { forward: false, backward: false, left: false, right: false, up: false, down: false };
 const SPEED = 20; // unités par seconde, ajuster si besoin
+const CAMERA_BOUNDS = {
+  minX: -24.35,
+  maxX: 26.33,
+  minY: -8.34,
+  maxY: 15.14,
+  minZ: -13.92,
+  maxZ: 36.29,
+};
+
+function logCameraPosition() {
+  console.log(
+    `Camera position - X: ${camera.position.x.toFixed(2)}, Y: ${camera.position.y.toFixed(2)}, Z: ${camera.position.z.toFixed(2)}`
+  );
+}
+
+function clampCameraPosition() {
+  camera.position.x = THREE.MathUtils.clamp(camera.position.x, CAMERA_BOUNDS.minX, CAMERA_BOUNDS.maxX);
+  camera.position.y = THREE.MathUtils.clamp(camera.position.y, CAMERA_BOUNDS.minY, CAMERA_BOUNDS.maxY);
+  camera.position.z = THREE.MathUtils.clamp(camera.position.z, CAMERA_BOUNDS.minZ, CAMERA_BOUNDS.maxZ);
+}
 
 // Intro control
 let introStarted = false;
@@ -109,6 +177,10 @@ function startIntro() {
   if (introStarted) return;
   introStarted = true;
   introFinished = false;
+  // Faire disparaître le texte d'instructions dès le début de l'intro
+  if (instructions) {
+    gsap.to(instructions, { opacity: 0, duration: 0.6, onComplete: () => { instructions.style.display = 'none'; } });
+  }
   gsap.to(camera.position, {
     z: 0,
     duration: 8,
@@ -121,6 +193,7 @@ function startIntro() {
     onComplete: () => {
       introFinished = true;
       console.log('Intro finie !');
+      logCameraPosition();
       // Si le texte est déjà créé, animer son scale, sinon marquer en attente
       try {
         if (typeof textMesh !== 'undefined' && textMesh) {
@@ -144,6 +217,10 @@ function startIntro() {
 }
 
 function onKeyDown(event) {
+  if (event.code === 'KeyT') {
+    logCameraPosition();
+  }
+
   // Pendant l'intro, n'autoriser que Space (et Escape pour unlock)
   if (!introFinished) {
     if (event.code === 'Space') { moveState.up = true; startIntro(); }
@@ -212,6 +289,10 @@ function animate() {
     if (moveY !== 0) camera.position.y += moveY * SPEED * delta;
   }
 
+  if (introFinished) {
+    clampCameraPosition();
+  }
+
   // (overlay titre désactivé)
   // Met à jour la position du marqueur devant la caméra
   camera.getWorldDirection(_cameraDir);
@@ -219,7 +300,6 @@ function animate() {
   
   // Vérifier interaction avec la bouée
   updateInteractionHint();
-  
   renderer.render(scene, camera);
 }
 
@@ -282,7 +362,7 @@ function openPanel(panel) {
   });
 
   // Désactive le lock de la souris si panneau bouée, crédits, contact ou lunettes
-  if ((panel.id === 'bouee-panel' || panel.id === 'credits-panel' || panel.id === 'contact-panel' || panel.id === 'lunettes-panel') && controls.isLocked) {
+  if ((panel.id === 'bouee-panel' || panel.id === 'credits-panel' || panel.id === 'contact-panel' || panel.id === 'lunettes-panel' || panel.id === 'ball-panel' || panel.id === 'montagne-panel') && controls.isLocked) {
     controls.unlock();
   }
 
@@ -335,7 +415,7 @@ function closePanel(panel) {
     onComplete: () => {
       panel.classList.remove('active');
       // Réactive le lock de la souris si panneau bouée, crédits ou contact (PAS lunettes)
-      if ((panel.id === 'bouee-panel' || panel.id === 'credits-panel' || panel.id === 'contact-panel') && !controls.isLocked) {
+      if ((panel.id === 'bouee-panel' || panel.id === 'credits-panel' || panel.id === 'contact-panel' || panel.id === 'ball-panel' || panel.id === 'montagne-panel') && !controls.isLocked) {
         controls.lock();
       }
     }
@@ -374,10 +454,117 @@ document.querySelectorAll('.info-panel').forEach(panel => {
 // Fermer avec la touche Escape
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    document.querySelectorAll('.info-panel.active').forEach(panel => {
-      closePanel(panel);
-    });
+    if (lightbox.classList.contains('active')) {
+      closeLightbox();
+    } else {
+      document.querySelectorAll('.info-panel.active').forEach(panel => {
+        closePanel(panel);
+      });
+    }
   }
+});
+
+// Lightbox pour les images des panneaux
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+
+let lbScale = 1;
+let lbTransX = 0;
+let lbTransY = 0;
+let lbIsDragging = false;
+let lbDragStartX = 0;
+let lbDragStartY = 0;
+let lbDragOriginX = 0;
+let lbDragOriginY = 0;
+const LB_MIN_SCALE = 1;
+const LB_MAX_SCALE = 5;
+const LB_ZOOM_STEP = 0.3;
+
+function applyLightboxTransform() {
+  lightboxImg.style.transform = `scale(${lbScale}) translate(${lbTransX}px, ${lbTransY}px)`;
+  lightboxImg.classList.toggle('zoomed', lbScale > 1);
+  lightboxImg.classList.toggle('dragging', lbIsDragging);
+}
+
+function resetLightboxTransform() {
+  lbScale = 1;
+  lbTransX = 0;
+  lbTransY = 0;
+  applyLightboxTransform();
+}
+
+function openLightbox(src, alt) {
+  lightboxImg.src = src;
+  lightboxImg.alt = alt;
+  resetLightboxTransform();
+  // S'assurer que le pointer lock est relâché pour garder le curseur visible
+  if (controls.isLocked) controls.unlock();
+  lightbox.classList.add('active');
+}
+
+function closeLightbox() {
+  lightbox.classList.remove('active');
+  lightboxImg.src = '';
+  resetLightboxTransform();
+  // Ne pas recapturer le pointer lock : l'utilisateur est encore dans un panneau
+}
+
+// Zoom à la molette
+lightbox.addEventListener('wheel', (e) => {
+  if (!lightbox.classList.contains('active')) return;
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? LB_ZOOM_STEP : -LB_ZOOM_STEP;
+  lbScale = Math.min(LB_MAX_SCALE, Math.max(LB_MIN_SCALE, lbScale + delta));
+  if (lbScale === LB_MIN_SCALE) { lbTransX = 0; lbTransY = 0; }
+  applyLightboxTransform();
+}, { passive: false });
+
+// Double-clic pour réinitialiser
+lightboxImg.addEventListener('dblclick', (e) => {
+  e.stopPropagation();
+  resetLightboxTransform();
+});
+
+// Drag pour déplacer l'image zoomée
+lightboxImg.addEventListener('mousedown', (e) => {
+  if (lbScale <= 1) return;
+  e.preventDefault();
+  lbIsDragging = true;
+  lbDragStartX = e.clientX;
+  lbDragStartY = e.clientY;
+  lbDragOriginX = lbTransX;
+  lbDragOriginY = lbTransY;
+  applyLightboxTransform();
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!lbIsDragging) return;
+  lbTransX = lbDragOriginX + (e.clientX - lbDragStartX) / lbScale;
+  lbTransY = lbDragOriginY + (e.clientY - lbDragStartY) / lbScale;
+  applyLightboxTransform();
+});
+
+document.addEventListener('mouseup', () => {
+  if (lbIsDragging) {
+    lbIsDragging = false;
+    applyLightboxTransform();
+  }
+});
+
+document.querySelectorAll('.panel-img').forEach(img => {
+  img.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openLightbox(img.src, img.alt);
+  });
+});
+
+document.querySelector('.lightbox-close').addEventListener('click', (e) => {
+  e.stopPropagation();
+  closeLightbox();
+});
+
+lightbox.addEventListener('click', (e) => {
+  if (e.target === lightbox) closeLightbox();
 });
 
 
@@ -403,19 +590,30 @@ function checkBoueeRaycast() {
 // Fonction pour vérifier si on regarde les lunettes
 function checkLunettesRaycast() {
   if (!lunettesObject || !introFinished) return false;
-  
-  // Direction du regard (centre de l'écran)
   raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-  
-  // Vérifier intersection avec les lunettes et ses enfants
   const intersects = raycaster.intersectObject(lunettesObject, true);
-  
-  // Distance maximale pour l'interaction
   const maxDistance = 30;
-  
-  if (intersects.length > 0 && intersects[0].distance < maxDistance) {
-    return true;
-  }
+  if (intersects.length > 0 && intersects[0].distance < maxDistance) return true;
+  return false;
+}
+
+// Fonction pour vérifier si on regarde le ballon
+function checkBallRaycast() {
+  if (!rugbyObject || !introFinished) return false;
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+  const intersects = raycaster.intersectObject(rugbyObject, true);
+  const maxDistance = 30;
+  if (intersects.length > 0 && intersects[0].distance < maxDistance) return true;
+  return false;
+}
+
+// Fonction pour vérifier si on regarde la montagne
+function checkMontagneRaycast() {
+  if (!montagneObject || !introFinished) return false;
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+  const intersects = raycaster.intersectObject(montagneObject, true);
+  const maxDistance = 50;
+  if (intersects.length > 0 && intersects[0].distance < maxDistance) return true;
   return false;
 }
 
@@ -423,21 +621,28 @@ function checkLunettesRaycast() {
 function updateInteractionHint() {
   const hoveringBouee = checkBoueeRaycast();
   const hoveringLunettes = checkLunettesRaycast();
+  const hoveringBall = checkBallRaycast();
+  const hoveringMontagne = checkMontagneRaycast();
 
   if (hoveringBouee) {
     interactHint.classList.add('visible');
-    isHoveringBouee = true;
-    isHoveringLunettes = false;
+    isHoveringBouee = true; isHoveringLunettes = false; isHoveringBall = false; isHoveringMontagne = false;
     currentHoveredObject = 'bouee';
   } else if (hoveringLunettes) {
     interactHint.classList.add('visible');
-    isHoveringBouee = false;
-    isHoveringLunettes = true;
+    isHoveringBouee = false; isHoveringLunettes = true; isHoveringBall = false; isHoveringMontagne = false;
     currentHoveredObject = 'lunettes';
+  } else if (hoveringBall) {
+    interactHint.classList.add('visible');
+    isHoveringBouee = false; isHoveringLunettes = false; isHoveringBall = true; isHoveringMontagne = false;
+    currentHoveredObject = 'ball';
+  } else if (hoveringMontagne) {
+    interactHint.classList.add('visible');
+    isHoveringBouee = false; isHoveringLunettes = false; isHoveringBall = false; isHoveringMontagne = true;
+    currentHoveredObject = 'montagne';
   } else {
     interactHint.classList.remove('visible');
-    isHoveringBouee = false;
-    isHoveringLunettes = false;
+    isHoveringBouee = false; isHoveringLunettes = false; isHoveringBall = false; isHoveringMontagne = false;
     currentHoveredObject = null;
   }
 }
@@ -451,8 +656,22 @@ document.addEventListener('keydown', (e) => {
     } else if (isHoveringLunettes && lunettesPanel) {
       openPanel(lunettesPanel);
       interactHint.classList.remove('visible');
+    } else if (isHoveringBall && ballPanel) {
+      openPanel(ballPanel);
+      interactHint.classList.remove('visible');
+    } else if (isHoveringMontagne && montagnePanel) {
+      openPanel(montagnePanel);
+      interactHint.classList.remove('visible');
     }
   }
 });
 
 // Fin du fichier — autres ajouts possibles : audio, interaction, textures...
+
+object.traverse(child => {
+  if (child.material.name.includes('model2:mat21') || child.material.name === 'lambert7') {
+    child.material.transparent = true;
+    child.material.opacity = 0.1;
+    child.material.depthWrite = false;
+  }
+});
