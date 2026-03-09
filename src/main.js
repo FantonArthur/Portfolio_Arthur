@@ -42,11 +42,11 @@ let beanObject = null;
 let montagneObject = null;
 let rugbyObject = null;
 const mtlLoaderBouee = new MTLLoader();
-mtlLoaderBouee.load(cheminBase + 'bouee.mtl', (materials) => {
+mtlLoaderBouee.load(`${cheminBase.base}bouee.mtl`, (materials) => {
   materials.preload();
   const objLoaderBouee = new OBJLoader();
   objLoaderBouee.setMaterials(materials);
-  objLoaderBouee.load(cheminBase +'bouee.obj', (object) => {
+  objLoaderBouee.load(`${cheminBase.base}bouee.obj`, (object) => {
     object.position.set(9.5, 0, 0); // Ajuste la position si besoin
     object.scale.set(6, 6, 6);   // Scale x6
     object.name = 'bouee'; // Nom pour identifier l'objet
@@ -57,11 +57,11 @@ mtlLoaderBouee.load(cheminBase + 'bouee.mtl', (materials) => {
 
 // Montagne (OBJ/MTL)
 const mtlLoaderMontagne = new MTLLoader();
-mtlLoaderMontagne.load(cheminBase +'montagne.mtl', (materials) => {
+mtlLoaderMontagne.load(`${cheminBase.base}montagne.mtl`, (materials) => {
   materials.preload();
   const objLoaderMontagne = new OBJLoader();
   objLoaderMontagne.setMaterials(materials);
-  objLoaderMontagne.load(cheminBase +'montagne.obj', (object) => {
+  objLoaderMontagne.load(`${cheminBase.base}montagne.obj`, (object) => {
     object.position.set(-22.2, 6.1, -8);
     object.scale.set(1, 1, 1);
     object.name = 'montagne';
@@ -72,11 +72,11 @@ mtlLoaderMontagne.load(cheminBase +'montagne.mtl', (materials) => {
 
 // ball (OBJ/MTL)
 const mtlLoaderBall = new MTLLoader();
-mtlLoaderBall.load(cheminBase +'ball.mtl', (materials) => {
+mtlLoaderBall.load(`${cheminBase.base}ball.mtl`, (materials) => {
   materials.preload();
   const objLoaderall = new OBJLoader();
   objLoaderall.setMaterials(materials);
-  objLoaderall.load(cheminBase +'ball.obj', (object) => {
+  objLoaderall.load(`${cheminBase.base}ball.obj`, (object) => {
     object.position.set(13, -7, 34);
     object.scale.set(3, 3, 3);
     object.name = 'ball';
@@ -86,11 +86,11 @@ mtlLoaderBall.load(cheminBase +'ball.mtl', (materials) => {
 });
 // bean (OBJ/MTL)
 const mtlLoaderBean = new MTLLoader();
-mtlLoaderBean.load(cheminBase +'BeanBag.mtl', (materials) => {
+mtlLoaderBean.load(`${cheminBase.base}BeanBag.mtl`, (materials) => {
   materials.preload();
   const objLoaderBean = new OBJLoader();
   objLoaderBean.setMaterials(materials);
-  objLoaderBean.load(cheminBase +'BeanBag.obj', (object) => {
+  objLoaderBean.load(`${cheminBase.base}BeanBag.obj`, (object) => {
     object.position.set(21, -9, 29);
     object.scale.set(10, 10, 10);
     object.rotation.set(0, Math.PI * 1.5, 0); // 270° sur l'axe Y
@@ -117,14 +117,14 @@ function applyMaterialTransparency(material) {
 }
 
 const mtlLoader = new MTLLoader();
-mtlLoader.load('/bureau.mtl', (materials) => {
+mtlLoader.load(`${cheminBase.base}bureau.mtl`, (materials) => {
   materials.preload();
 
   Object.values(materials.materials).forEach(applyMaterialTransparency);
 
   const objLoader = new OBJLoader();
   objLoader.setMaterials(materials);
-  objLoader.load('/bureau.obj', (object) => {
+  objLoader.load(`${cheminBase.base}bureau.obj`, (object) => {
     object.position.set(-2, -10, -5); // Ajuste la position si besoin
     object.scale.set(10, 10, 10);   // Ajuste la taille si besoin
 
