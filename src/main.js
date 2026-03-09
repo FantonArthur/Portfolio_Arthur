@@ -99,14 +99,45 @@ mtlLoaderBean.load('/BeanBag.mtl', (materials) => {
   });
 });
 
+const TRANSPARENT_MATERIALS = new Map([
+  ['lambert4SG', 0.2],
+]);
+
+function applyMaterialTransparency(material) {
+  if (!material) return;
+
+  const opacity = TRANSPARENT_MATERIALS.get(material.name);
+  if (opacity === undefined) return;
+
+  material.transparent = true;
+  material.opacity = opacity;
+  material.depthWrite = false;
+  material.needsUpdate = true;
+}
+
 const mtlLoader = new MTLLoader();
 mtlLoader.load('/bureau.mtl', (materials) => {
   materials.preload();
+
+  Object.values(materials.materials).forEach(applyMaterialTransparency);
+
   const objLoader = new OBJLoader();
   objLoader.setMaterials(materials);
   objLoader.load('/bureau.obj', (object) => {
     object.position.set(-2, -10, -5); // Ajuste la position si besoin
     object.scale.set(10, 10, 10);   // Ajuste la taille si besoin
+
+    object.traverse((child) => {
+      if (!child.isMesh || !child.material) return;
+
+      if (Array.isArray(child.material)) {
+        child.material.forEach(applyMaterialTransparency);
+        return;
+      }
+
+      applyMaterialTransparency(child.material);
+    });
+
     scene.add(object);
   });
 });
