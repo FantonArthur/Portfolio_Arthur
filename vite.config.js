@@ -1,6 +1,6 @@
-/**
- * @type {import('vite').UserConfig}
- */
-export default {
-  base: process.env.NODE_ENV === 'production' ? '/Portfolio_Arthur/' : '/'
-}
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  base: "/Portfolio_Arthur/"
+ 
+})

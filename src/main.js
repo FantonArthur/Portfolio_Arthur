@@ -14,7 +14,7 @@ const scene = new THREE.Scene();
 // === FBX Loader pour les lunettes ===
 let lunettesObject = null; // Référence pour le raycast
 const fbxLoader = new FBXLoader();
-fbxLoader.load('/lunettes.fbx', (object) => {
+fbxLoader.load('/Portfolio_Arthur/lunettes.fbx', (object) => {
   object.scale.set(1.5, 1.5, 1.5);
   object.position.set(-21, -.5, -1); // Ajuste la position si besoin
   object.rotation.set(0, 90, 0); // Ajuste la rotation si besoin
@@ -41,11 +41,11 @@ let beanObject = null;
 let montagneObject = null;
 let rugbyObject = null;
 const mtlLoaderBouee = new MTLLoader();
-mtlLoaderBouee.load('/bouee.mtl', (materials) => {
+mtlLoaderBouee.load('/Portfolio_Arthur/bouee.mtl', (materials) => {
   materials.preload();
   const objLoaderBouee = new OBJLoader();
   objLoaderBouee.setMaterials(materials);
-  objLoaderBouee.load('/bouee.obj', (object) => {
+  objLoaderBouee.load('/Portfolio_Arthur/bouee.obj', (object) => {
     object.position.set(9.5, 0, 0); // Ajuste la position si besoin
     object.scale.set(6, 6, 6);   // Scale x6
     object.name = 'bouee'; // Nom pour identifier l'objet
@@ -56,11 +56,11 @@ mtlLoaderBouee.load('/bouee.mtl', (materials) => {
 
 // Montagne (OBJ/MTL)
 const mtlLoaderMontagne = new MTLLoader();
-mtlLoaderMontagne.load('/montagne.mtl', (materials) => {
+mtlLoaderMontagne.load('/Portfolio_Arthur/montagne.mtl', (materials) => {
   materials.preload();
   const objLoaderMontagne = new OBJLoader();
   objLoaderMontagne.setMaterials(materials);
-  objLoaderMontagne.load('/montagne.obj', (object) => {
+  objLoaderMontagne.load('/Portfolio_Arthur/montagne.obj', (object) => {
     object.position.set(-22.2, 6.1, -8);
     object.scale.set(1, 1, 1);
     object.name = 'montagne';
@@ -71,11 +71,11 @@ mtlLoaderMontagne.load('/montagne.mtl', (materials) => {
 
 // ball (OBJ/MTL)
 const mtlLoaderBall = new MTLLoader();
-mtlLoaderBall.load('/ball.mtl', (materials) => {
+mtlLoaderBall.load('/Portfolio_Arthur/ball.mtl', (materials) => {
   materials.preload();
   const objLoaderall = new OBJLoader();
   objLoaderall.setMaterials(materials);
-  objLoaderall.load('/ball.obj', (object) => {
+  objLoaderall.load('/Portfolio_Arthur/ball.obj', (object) => {
     object.position.set(13, -7, 34);
     object.scale.set(3, 3, 3);
     object.name = 'ball';
@@ -85,11 +85,11 @@ mtlLoaderBall.load('/ball.mtl', (materials) => {
 });
 // bean (OBJ/MTL)
 const mtlLoaderBean = new MTLLoader();
-mtlLoaderBean.load('/BeanBag.mtl', (materials) => {
+mtlLoaderBean.load('/Portfolio_Arthur/BeanBag.mtl', (materials) => {
   materials.preload();
   const objLoaderBean = new OBJLoader();
   objLoaderBean.setMaterials(materials);
-  objLoaderBean.load('/BeanBag.obj', (object) => {
+  objLoaderBean.load('/Portfolio_Arthur/BeanBag.obj', (object) => {
     object.position.set(21, -9, 29);
     object.scale.set(10, 10, 10);
     object.rotation.set(0, Math.PI * 1.5, 0); // 270° sur l'axe Y
