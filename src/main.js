@@ -30,10 +30,12 @@ const boueePanel = document.getElementById('bouee-panel');
 const lunettesPanel = document.getElementById('lunettes-panel');
 const ballPanel = document.getElementById('ball-panel');
 const montagnePanel = document.getElementById('montagne-panel');
+const musicPanel = document.getElementById('music-panel');
 let isHoveringBouee = false;
 let isHoveringLunettes = false;
 let isHoveringBall = false;
 let isHoveringMontagne = false;
+let isHoveringMusic = false;
 let currentHoveredObject = null; // Pour savoir quel objet est survolé
 // === OBJ/MTL Loader ===
 // Bouée
@@ -41,6 +43,7 @@ let boueeObject = null; // Référence pour le raycast
 let beanObject = null;
 let montagneObject = null;
 let rugbyObject = null;
+let musicObject = null;
 const mtlLoaderBouee = new MTLLoader();
 mtlLoaderBouee.load(`${cheminBase.base}bouee.mtl`, (materials) => {
   materials.preload();
@@ -96,6 +99,26 @@ mtlLoaderBean.load(`${cheminBase.base}BeanBag.mtl`, (materials) => {
     object.rotation.set(0, Math.PI * 1.5, 0); // 270° sur l'axe Y
     object.name = 'bean';
     beanObject = object;
+    scene.add(object);
+  });
+});
+
+// music (OBJ/MTL)
+const mtlLoaderMusic = new MTLLoader();
+mtlLoaderMusic.load(`${cheminBase.base}music.mtl`, (materials) => {
+  materials.preload();
+  const objLoaderMusic = new OBJLoader();
+  objLoaderMusic.setMaterials(materials);
+  objLoaderMusic.load(`${cheminBase.base}music.obj`, (object) => {
+    // Vertices à ~1800 unités : réduire à une taille lisible
+    object.scale.set(0.004, 0.004, 0.004);
+    // Centrer l'objet sur son propre pivot puis le placer dans la scène
+    const box = new THREE.Box3().setFromObject(object);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    object.position.sub(center).add(new THREE.Vector3(-10, 0, 17));    
+    object.rotation.y = Math.PI; // 180° sur l'axe X    object.name = 'music';
+    musicObject = object;
     scene.add(object);
   });
 });
@@ -172,9 +195,17 @@ scene.add(pointLight, ambientLight);
 // PointerLockControls pour contrôle libre (regarder + marcher)
 const controls = new PointerLockControls(camera, renderer.domElement);
 
+// Vérifie si un panneau ou la lightbox est actif
+function isAnyPanelActive() {
+  return document.querySelector('.info-panel.active') !== null
+    || document.getElementById('lightbox')?.classList.contains('active');
+}
+
 // Click pour verrouiller le pointeur (look around)
 document.addEventListener('click', () => {
-  controls.lock();
+  if (!isAnyPanelActive()) {
+    controls.lock();
+  }
 });
 
 // Movement state
@@ -393,8 +424,8 @@ function openPanel(panel) {
     if (p !== panel) p.classList.remove('active');
   });
 
-  // Désactive le lock de la souris si panneau bouée, crédits, contact ou lunettes
-  if ((panel.id === 'bouee-panel' || panel.id === 'credits-panel' || panel.id === 'contact-panel' || panel.id === 'lunettes-panel' || panel.id === 'ball-panel' || panel.id === 'montagne-panel') && controls.isLocked) {
+  // Désactive le lock de la souris pour garder le curseur visible
+  if (controls.isLocked) {
     controls.unlock();
   }
 
@@ -446,8 +477,8 @@ function closePanel(panel) {
     ease: 'power2.in',
     onComplete: () => {
       panel.classList.remove('active');
-      // Réactive le lock de la souris si panneau bouée, crédits ou contact (PAS lunettes)
-      if ((panel.id === 'bouee-panel' || panel.id === 'credits-panel' || panel.id === 'contact-panel' || panel.id === 'ball-panel' || panel.id === 'montagne-panel') && !controls.isLocked) {
+      // Réactive le lock seulement si plus aucun panneau n'est ouvert
+      if (!isAnyPanelActive() && !controls.isLocked) {
         controls.lock();
       }
     }
@@ -649,32 +680,47 @@ function checkMontagneRaycast() {
   return false;
 }
 
+// Fonction pour vérifier si on regarde le tourne-disque
+function checkMusicRaycast() {
+  if (!musicObject || !introFinished) return false;
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+  const intersects = raycaster.intersectObject(musicObject, true);
+  const maxDistance = 30;
+  if (intersects.length > 0 && intersects[0].distance < maxDistance) return true;
+  return false;
+}
+
 // Mise à jour du hint d'interaction dans la boucle d'animation
 function updateInteractionHint() {
   const hoveringBouee = checkBoueeRaycast();
   const hoveringLunettes = checkLunettesRaycast();
   const hoveringBall = checkBallRaycast();
   const hoveringMontagne = checkMontagneRaycast();
+  const hoveringMusic = checkMusicRaycast();
 
   if (hoveringBouee) {
     interactHint.classList.add('visible');
-    isHoveringBouee = true; isHoveringLunettes = false; isHoveringBall = false; isHoveringMontagne = false;
+    isHoveringBouee = true; isHoveringLunettes = false; isHoveringBall = false; isHoveringMontagne = false; isHoveringMusic = false;
     currentHoveredObject = 'bouee';
   } else if (hoveringLunettes) {
     interactHint.classList.add('visible');
-    isHoveringBouee = false; isHoveringLunettes = true; isHoveringBall = false; isHoveringMontagne = false;
+    isHoveringBouee = false; isHoveringLunettes = true; isHoveringBall = false; isHoveringMontagne = false; isHoveringMusic = false;
     currentHoveredObject = 'lunettes';
   } else if (hoveringBall) {
     interactHint.classList.add('visible');
-    isHoveringBouee = false; isHoveringLunettes = false; isHoveringBall = true; isHoveringMontagne = false;
+    isHoveringBouee = false; isHoveringLunettes = false; isHoveringBall = true; isHoveringMontagne = false; isHoveringMusic = false;
     currentHoveredObject = 'ball';
   } else if (hoveringMontagne) {
     interactHint.classList.add('visible');
-    isHoveringBouee = false; isHoveringLunettes = false; isHoveringBall = false; isHoveringMontagne = true;
+    isHoveringBouee = false; isHoveringLunettes = false; isHoveringBall = false; isHoveringMontagne = true; isHoveringMusic = false;
     currentHoveredObject = 'montagne';
+  } else if (hoveringMusic) {
+    interactHint.classList.add('visible');
+    isHoveringBouee = false; isHoveringLunettes = false; isHoveringBall = false; isHoveringMontagne = false; isHoveringMusic = true;
+    currentHoveredObject = 'music';
   } else {
     interactHint.classList.remove('visible');
-    isHoveringBouee = false; isHoveringLunettes = false; isHoveringBall = false; isHoveringMontagne = false;
+    isHoveringBouee = false; isHoveringLunettes = false; isHoveringBall = false; isHoveringMontagne = false; isHoveringMusic = false;
     currentHoveredObject = null;
   }
 }
@@ -694,8 +740,75 @@ document.addEventListener('keydown', (e) => {
     } else if (isHoveringMontagne && montagnePanel) {
       openPanel(montagnePanel);
       interactHint.classList.remove('visible');
+    } else if (isHoveringMusic && musicPanel) {
+      openPanel(musicPanel);
+      interactHint.classList.remove('visible');
     }
   }
 });
 
-// Fin du fichier — autres ajouts possibles : audio, interaction, textures...
+// ===== MUSIC PLAYER =====
+const tracks = [
+  { name: 'Memories - Atch', src: `${cheminBase.base}assets/audio/Atch_Memories.mp3` },
+  { name: 'Lockdown - Baribal & Pold', src: `${cheminBase.base}assets/audio/BaribalPold-Lockdown.mp3` },
+  { name: 'Remember - Tomh', src: `${cheminBase.base}assets/audio/HaTom-Remember.mp3` },
+  { name: 'K For Kool - Kuromaru', src: `${cheminBase.base}assets/audio/Kuromaru-KForKool.mp3` },
+  { name: 'Morning - Scandinavianz', src: `${cheminBase.base}assets/audio/Scandinavianz-Morning.mp3` },
+];
+let currentTrack = 0;
+let isPlaying = false;
+const audio = new Audio();
+audio.volume = 0.5;
+
+const playBtn = document.getElementById('music-play');
+const prevBtn = document.getElementById('music-prev');
+const nextBtn = document.getElementById('music-next');
+const nowPlaying = document.querySelector('.now-playing');
+const progressFill = document.querySelector('.progress-fill');
+
+function loadTrack(index) {
+  currentTrack = index;
+  audio.src = tracks[index].src;
+  if (nowPlaying) nowPlaying.textContent = tracks[index].name;
+  if (isPlaying) audio.play();
+}
+
+function togglePlay() {
+  if (isPlaying) {
+    audio.pause();
+    if (playBtn) playBtn.textContent = '▶';
+  } else {
+    audio.play();
+    if (playBtn) playBtn.textContent = '⏸';
+  }
+  isPlaying = !isPlaying;
+}
+
+if (playBtn) playBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+if (prevBtn) prevBtn.addEventListener('click', (e) => { e.stopPropagation(); loadTrack((currentTrack - 1 + tracks.length) % tracks.length); });
+if (nextBtn) nextBtn.addEventListener('click', (e) => { e.stopPropagation(); loadTrack((currentTrack + 1) % tracks.length); });
+
+audio.addEventListener('timeupdate', () => {
+  if (audio.duration && progressFill) {
+    progressFill.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
+  }
+});
+audio.addEventListener('ended', () => loadTrack((currentTrack + 1) % tracks.length));
+
+loadTrack(0);
+
+// Lance la musique dès la première interaction utilisateur (autoplay bloqué par les navigateurs sinon)
+function startMusicOnFirstInteraction() {
+  if (!isPlaying) togglePlay();
+  document.removeEventListener('click', startMusicOnFirstInteraction);
+  document.removeEventListener('keydown', startMusicOnFirstInteraction);
+}
+document.addEventListener('click', startMusicOnFirstInteraction);
+document.addEventListener('keydown', startMusicOnFirstInteraction);
+
+// Touche Q pour pause/play la musique
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'KeyQ') togglePlay();
+});
+
+// Fin du fichier

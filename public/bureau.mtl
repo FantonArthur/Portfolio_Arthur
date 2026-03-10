@@ -232,10 +232,8 @@ newmtl lambert4SG
 illum 4
 Kd 0.00 0.00 0.00
 Ka 0.00 0.00 0.00
-Tf 1.00 1.00 1.00
+Tf 0.29 0.29 0.29
 Ni 1.00
-d 0.2
-Ni 1.50
 newmtl model:mat8
 illum 4
 Kd 0.19 0.09 0.06
@@ -318,9 +316,8 @@ newmtl model2:mat21
 illum 4
 Kd 1.00 1.00 1.00
 Ka 1.00 1.00 1.00
-Tf 0.5 0.5 0.5
+Tf 1.00 1.00 1.00
 Ni 1.00
-
 newmtl model2:mat23
 illum 4
 Kd 0.10 0.10 0.10
@@ -336,6 +333,18 @@ Ni 1.00
 newmtl standardSurface4SG
 illum 4
 Kd 0.39 0.20 0.02
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+newmtl standardSurface5SG
+illum 4
+Kd 0.46 0.20 0.06
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+newmtl standardSurface6SG
+illum 4
+Kd 0.25 0.10 0.02
 Ka 0.00 0.00 0.00
 Tf 1.00 1.00 1.00
 Ni 1.00
